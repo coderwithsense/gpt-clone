@@ -73,19 +73,14 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
     setCurrentChatId(chatId);
   };
 
-  const handleNewChat = () => {
-    setCurrentChatId("new");
-  };
-
   return (
     <div className="min-h-screen flex w-full bg-chatgpt-white">
       {/* Sidebar */}
       <ChatSidebar
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
-        currentChatId={currentChatId}
+        // currentChatId={currentChatId}
         onChatSelect={handleChatSelect}
-        onNewChat={handleNewChat}
       />
 
       {/* Main Content */}

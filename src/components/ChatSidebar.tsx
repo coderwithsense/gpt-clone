@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,34 +19,32 @@ import {
   Share2,
 } from "lucide-react";
 import { ChatOptionsModal } from "./ChatOptionsModal";
+import { formatDistanceToNow } from "date-fns";
 import { useChatStore } from "@/lib/stores/chatStore";
 import { useRouter } from "next/navigation";
 
 interface ChatSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
-  currentChatId?: string;
   onChatSelect: (chatId: string) => void;
-  onNewChat: () => void;
+  // onNewChat: () => void;
 }
 
 export const ChatSidebar = ({
   isOpen,
   onToggle,
-  currentChatId,
   onChatSelect,
-}: ChatSidebarProps) => {
+}: // onNewChat,
+ChatSidebarProps) => {
   const [selectedChatForOptions, setSelectedChatForOptions] = useState<
     string | null
   >(null);
-
   const { chats, fetchChats } = useChatStore();
-
   const router = useRouter();
 
   useEffect(() => {
     fetchChats();
-  }, [fetchChats]);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -55,7 +55,6 @@ export const ChatSidebar = ({
           <Button
             onClick={() => {
               router.push("/");
-              onToggle();
             }}
             className="w-full justify-start h-11 bg-white border border-chatgpt-gray-200 text-chatgpt-gray-700 hover:bg-chatgpt-gray-50 transition-colors rounded-full"
             variant="outline"
@@ -75,7 +74,6 @@ export const ChatSidebar = ({
           </Button>
         </div>
 
-        {/* Scrollable Chats Section */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-3">
           <div className="text-xs font-medium text-chatgpt-gray-500 mb-2 px-2">
             Chats
@@ -84,18 +82,20 @@ export const ChatSidebar = ({
             {chats.map((chat) => (
               <div
                 key={chat.id}
-                className={`group flex items-center w-full p-2 rounded-lg cursor-pointer transition-colors ${
-                  currentChatId === chat.id
-                    ? "bg-chatgpt-gray-100"
-                    : "hover:bg-chatgpt-gray-100"
-                }`}
+                className={`group flex items-center w-full p-2 rounded-lg cursor-pointer transition-colors hover:bg-chatgpt-gray-100`}
                 onClick={() => onChatSelect(chat.id)}
               >
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-chatgpt-gray-900 truncate">
                     {chat.title || "Untitled Chat"}
                   </div>
+                  <div className="text-xs text-chatgpt-gray-500">
+                    {formatDistanceToNow(new Date(chat.updatedAt), {
+                      addSuffix: true,
+                    })}
+                  </div>
                 </div>
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -122,7 +122,7 @@ export const ChatSidebar = ({
                       <Pencil className="w-4 h-4" />
                       Rename
                     </DropdownMenuItem>
-                    <hr className="h-px my-1 bg-gray-200 border-0 dark:bg-gray-700"></hr>
+                    <hr className="h-px my-1 bg-gray-200 border-0 dark:bg-gray-700" />
                     <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 text-sm rounded-md hover:bg-accent">
                       <Archive className="w-4 h-4" />
                       Archive
@@ -138,7 +138,6 @@ export const ChatSidebar = ({
           </div>
         </div>
 
-        {/* Bottom Buttons */}
         <div className="p-3 border-t border-chatgpt-gray-200">
           <Button
             variant="ghost"
