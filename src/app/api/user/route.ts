@@ -1,3 +1,4 @@
+import { clerkClient } from "@/lib/clerk";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 
@@ -32,15 +33,17 @@ export async function POST(request: Request) {
     if (existingUser) {
       // Update existing user
       await prisma.user.update({
-        where: { id: userId },
+        where: { clerkId: userId },
         data: { email },
       });
     } else {
+      const clerk = await clerkClient.users.getUser(userId);
       // Create a new user
       await prisma.user.create({
         data: {
           clerkId: userId,
           email,
+          name: `${clerk.firstName ?? ''} ${clerk.lastName ?? ''}`,
         },
       });
     }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,12 +17,8 @@ import {
   Share2,
 } from "lucide-react";
 import { ChatOptionsModal } from "./ChatOptionsModal";
-
-interface Chat {
-  id: string;
-  title: string;
-  timestamp: string;
-}
+import { useChatStore } from "@/lib/stores/chatStore";
+import { useRouter } from "next/navigation";
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -37,68 +33,18 @@ export const ChatSidebar = ({
   onToggle,
   currentChatId,
   onChatSelect,
-  onNewChat,
 }: ChatSidebarProps) => {
   const [selectedChatForOptions, setSelectedChatForOptions] = useState<
     string | null
   >(null);
 
-  // Mock chat data
-  const chats: Chat[] = [
-    { id: "1", title: "India Coding Chat", timestamp: "2 hours ago" },
-    { id: "2", title: "Opening Razer Cobra Mouse", timestamp: "1 day ago" },
-    {
-      id: "3",
-      title: "JavaScript Element Manipulation",
-      timestamp: "2 days ago",
-    },
-    { id: "4", title: "MAANG Junior Developer Guide", timestamp: "3 days ago" },
-    { id: "5", title: "Corporate card error fix", timestamp: "1 week ago" },
-    { id: "6", title: "PS5 Controller Sensor Type", timestamp: "1 week ago" },
-    { id: "7", title: "RDR2 Game Identification", timestamp: "2 weeks ago" },
-    { id: "8", title: "Developer Summary Skills", timestamp: "2 weeks ago" },
-    // make 10 more chats
-    {
-      id: "9",
-      title: "React Performance Optimization",
-      timestamp: "3 weeks ago",
-    },
-    { id: "10", title: "Next.js Deployment Issues", timestamp: "3 weeks ago" },
-    {
-      id: "11",
-      title: "Tailwind CSS Best Practices",
-      timestamp: "4 weeks ago",
-    },
-    { id: "12", title: "GraphQL vs REST APIs", timestamp: "1 month ago" },
-    {
-      id: "13",
-      title: "Docker Container Management",
-      timestamp: "1 month ago",
-    },
-    { id: "14", title: "Kubernetes Basics", timestamp: "1 month ago" },
-    {
-      id: "15",
-      title: "AWS S3 Bucket Configuration",
-      timestamp: "1 month ago",
-    },
-    { id: "16", title: "Azure DevOps Pipelines", timestamp: "1 month ago" },
-    { id: "17", title: "Google Cloud Functions", timestamp: "1 month ago" },
-    {
-      id: "18",
-      title: "Firebase Authentication Setup",
-      timestamp: "1 month ago",
-    },
-    {
-      id: "19",
-      title: "PostgreSQL Database Optimization",
-      timestamp: "1 month ago",
-    },
-    {
-      id: "20",
-      title: "MongoDB Indexing Strategies",
-      timestamp: "1 month ago",
-    },
-  ];
+  const { chats, fetchChats } = useChatStore();
+
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchChats();
+  }, [fetchChats]);
 
   if (!isOpen) return null;
 
@@ -107,7 +53,10 @@ export const ChatSidebar = ({
       <div className="w-64 h-screen bg-chatgpt-gray-50 border-r border-chatgpt-gray-200 flex flex-col">
         <div className="p-3">
           <Button
-            onClick={onNewChat}
+            onClick={() => {
+              router.push("/");
+              onToggle();
+            }}
             className="w-full justify-start h-11 bg-white border border-chatgpt-gray-200 text-chatgpt-gray-700 hover:bg-chatgpt-gray-50 transition-colors rounded-full"
             variant="outline"
           >
@@ -144,7 +93,7 @@ export const ChatSidebar = ({
               >
                 <div className="flex-1 min-w-0">
                   <div className="text-sm text-chatgpt-gray-900 truncate">
-                    {chat.title}
+                    {chat.title || "Untitled Chat"}
                   </div>
                 </div>
                 <DropdownMenu>
@@ -173,9 +122,7 @@ export const ChatSidebar = ({
                       <Pencil className="w-4 h-4" />
                       Rename
                     </DropdownMenuItem>
-                    {/* add a line  */}
-                    <hr className="h-px my-1  bg-gray-200 border-0 dark:bg-gray-700"></hr>
-
+                    <hr className="h-px my-1 bg-gray-200 border-0 dark:bg-gray-700"></hr>
                     <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 text-sm rounded-md hover:bg-accent">
                       <Archive className="w-4 h-4" />
                       Archive
