@@ -1,5 +1,6 @@
 import { createMessage, getMessagesByChatId } from "@/lib/api";
-import type { CoreMessage } from "ai";
+import { geminiModel } from "@/lib/models";
+import { generateText, type CoreMessage } from "ai";
 
 const askAI = async (prompt: string, userId: string, chatId: string) => {
     try {
@@ -37,9 +38,14 @@ const generateResponse = async (prompt: string, userId: string, chatId: string) 
 }
 
 const createTitle = async (prompt: string) => {
-    // Placeholder for title creation logic
-    // This could involve calling an AI service or using a predefined algorithm
+    // const result = await generateText({
+    //     model: geminiModel("gemini-2.0-flash-lite-preview-02-05"),
+    //     prompt: `Do NOT include explanations, punctuation, or quotation marks. Just return the title, nothing else. Create a title for my chat in not more than 3-5 words, this is the first prompt for the user: "${prompt}"`,
+    //     temperature: 0.5,
+    // });
+
+    // return result.text;
     return `Title for: ${prompt}`;
-}
+};
 
 export { createTitle, askAI };

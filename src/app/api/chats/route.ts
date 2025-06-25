@@ -19,7 +19,7 @@ export async function GET() {
   }
 
   const chats = await prisma.chat.findMany({
-    where: { userId: userId },
+    where: { userId: user.id }, // Use user.id instead of userId
     orderBy: { updatedAt: "desc" },
   });
 
@@ -47,14 +47,23 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    // Get the user from database to get the actual user ID
+    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    if (!user) {
+      return NextResponse.json({
+        success: false,
+        message: 'User not found',
+      }, { status: 404 });
+    }
+
     let chat = chatId ? await getChatById(chatId) : null;
 
     if (!chat) {
-      chat = await createChat(prompt, userId);
+      chat = await createChat(prompt, user.id); // Pass user.id instead of userId
       console.log('New chat created:', chat);
     }
 
-    const message = await askAI(prompt, userId, chat?.id as string)
+    const message = await askAI(prompt, user.id, chat?.id as string) // Pass user.id here too
 
     return NextResponse.json({
       success: true,
@@ -77,13 +86,19 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }
 
+  // Get the user from database
+  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  if (!user) {
+    return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+  }
+
   const { chatId } = await request.json();
   if (!chatId) {
     return NextResponse.json({ success: false, message: "Chat ID is required" }, { status: 400 });
   }
 
   try {
-    const chat = await prisma.chat.findUnique({ where: { id: chatId, userId } });
+    const chat = await prisma.chat.findUnique({ where: { id: chatId, userId: user.id } }); // Use user.id
     if (!chat) {
       return NextResponse.json({ success: false, message: "Chat not found" }, { status: 404 });
     }

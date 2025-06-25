@@ -1,10 +1,8 @@
 import { create } from "zustand";
-import useSWR, { mutate } from "swr";
 
 interface Chat {
     id: string;
     title?: string;
-    chatId: string;
     updatedAt: string;
 }
 
@@ -12,7 +10,6 @@ interface ChatStore {
     chats: Chat[];
     setChats: (chats: Chat[]) => void;
     fetchChats: () => Promise<void>;
-    createOrUpdateChat: (data: Partial<Chat>) => Promise<Chat | undefined>;
     deleteChat: (chatId: string) => Promise<void>;
 }
 
@@ -30,23 +27,8 @@ export const useChatStore = create<ChatStore>((set) => ({
         }
     },
 
-    createOrUpdateChat: async ({ title, chatId }) => {
-        const res = await fetch("/api/chats", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ title, chatId, prompt: title }),
-        });
-
-        const data = await res.json();
-
-        if (data.success && data.chatId) {
-            const refreshed = await fetch("/api/chats").then((r) => r.json());
-            if (refreshed.success && refreshed.chats) {
-                set({ chats: refreshed.chats });
-                return refreshed.chats.find((c: Chat) => c.id === data.chatId); // ✅ consistent return
-            }
-        }
-    },
+    // Remove createOrUpdateChat - let the backend handle this
+    // The message sending will create chats automatically
 
     deleteChat: async (chatId: string) => {
         // 1. Optimistically update Zustand state

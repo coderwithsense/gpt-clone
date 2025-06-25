@@ -11,17 +11,6 @@ interface CreateMessageParams {
   prompt?: string;
 }
 
-export interface Todo {
-  id: string;
-  title: string;
-  completed: boolean;
-  userId: string;
-  todoListId: string;
-  frequency: 'normal' | 'daily' | 'weekly' | 'monthly';
-  createdAt: Date;
-  endDate?: Date;
-}
-
 export async function getChats(userId: string) {
   return prisma.chat.findMany({
     where: { userId },

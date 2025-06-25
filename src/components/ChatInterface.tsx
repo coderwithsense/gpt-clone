@@ -2,9 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowUp, Paperclip, Mic } from "lucide-react";
-import { useChatStore } from "@/lib/stores/chatStore";
-
-type Chat = { id: string; title?: string };
 
 interface Message {
   id: string;
@@ -17,35 +14,24 @@ interface ChatInterfaceProps {
   messages: Message[];
   onSendMessage: (message: string, chatId?: string) => void;
   isLoading: boolean;
+  currentChatId?: string; // Add this to track current chat
 }
 
 export const ChatInterface = ({
   messages,
   onSendMessage,
   isLoading,
+  currentChatId, // Get current chat ID from parent
 }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
-  const [chatId, setChatId] = useState<string | null>(null);
-  type Chat = { id: string; title?: string };
-  const createOrUpdateChat = useChatStore(
-    (state) => state.createOrUpdateChat
-  ) as (chat: Partial<Chat>) => Promise<Chat>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    let currentChatId = chatId;
-
-    if (!currentChatId) {
-      // create a new chat only if one doesn't exist already
-      const newChat = await createOrUpdateChat({ title: trimmed });
-      currentChatId = newChat?.id;
-      setChatId(currentChatId || null);
-    }
-
-    onSendMessage(trimmed, currentChatId ?? undefined);
+    // Simply send the message - let the backend handle chat creation
+    onSendMessage(trimmed, currentChatId);
     setInput("");
   };
 
@@ -116,7 +102,7 @@ export const ChatInterface = ({
                 <Button
                   type="submit"
                   size="icon"
-                  disabled={!input.trim()}
+                  disabled={!input.trim() || isLoading}
                   className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-100 disabled:bg-zinc-200 disabled:text-zinc-400 w-8 h-8 p-0 rounded-full"
                 >
                   <ArrowUp className="w-4 h-4" />
