@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from 'react';
-import { ChatInterface } from '@/components/ChatInterface';
-import { Layout } from '@/components/Layout';
+import { useState } from "react";
+import { ChatInterface } from "@/components/ChatInterface";
+import { Layout } from "@/components/Layout";
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: Date;
 }
@@ -15,26 +15,40 @@ const Home = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const handleSendMessage = (content: string) => {
-    const newMessage: Message = {
+  const handleSendMessage = async (content: string) => {
+    const userMessage: Message = {
       id: Date.now().toString(),
-      role: 'user',
+      role: "user",
       content,
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    setMessages((prev) => [...prev, userMessage]);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: "I'm a demo response. In a real application, this would be connected to your backend API.",
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
+    try {
+      const res = await fetch("/api/chats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: content }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        const aiResponse: Message = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: data.message, // real response from `askAI`
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, aiResponse]);
+      } else {
+        throw new Error(data.message || "Unknown error");
+      }
+    } catch (error) {
+      console.error("Send message error:", error);
+    }
   };
 
   // Show auth modal on first visit
@@ -47,6 +61,7 @@ const Home = () => {
       <ChatInterface
         messages={messages}
         onSendMessage={handleSendMessage}
+        isLoading={false}
       />
     </Layout>
   );

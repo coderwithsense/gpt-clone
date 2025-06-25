@@ -22,24 +22,29 @@ import { ChatOptionsModal } from "./ChatOptionsModal";
 import { formatDistanceToNow } from "date-fns";
 import { useChatStore } from "@/lib/stores/chatStore";
 import { useRouter } from "next/navigation";
+import { SearchChatModal } from "./SearchChatModal";
+
+interface Chat {
+  id: string;
+  title?: string;
+  chatId: string;
+  updatedAt: string;
+}
 
 interface ChatSidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   onChatSelect: (chatId: string) => void;
-  // onNewChat: () => void;
 }
 
 export const ChatSidebar = ({
   isOpen,
   onToggle,
   onChatSelect,
-}: // onNewChat,
-ChatSidebarProps) => {
-  const [selectedChatForOptions, setSelectedChatForOptions] = useState<
-    string | null
-  >(null);
-  const { chats, fetchChats } = useChatStore();
+}: ChatSidebarProps) => {
+  const [selectedChatForOptions, setSelectedChatForOptions] = useState<string | null>(null);
+  const { chats, fetchChats, deleteChat } = useChatStore();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -53,9 +58,7 @@ ChatSidebarProps) => {
       <div className="w-64 h-screen bg-chatgpt-gray-50 border-r border-chatgpt-gray-200 flex flex-col">
         <div className="p-3">
           <Button
-            onClick={() => {
-              router.push("/");
-            }}
+            onClick={() => router.push("/")}
             className="w-full justify-start h-11 bg-white border border-chatgpt-gray-200 text-chatgpt-gray-700 hover:bg-chatgpt-gray-50 transition-colors rounded-full"
             variant="outline"
           >
@@ -68,6 +71,7 @@ ChatSidebarProps) => {
           <Button
             variant="ghost"
             className="w-full justify-start h-10 text-chatgpt-gray-600 hover:bg-chatgpt-gray-100 transition-colors rounded-lg"
+            onClick={() => setIsSearchOpen(true)}
           >
             <Search className="w-4 h-4 mr-2" />
             Search chats
@@ -75,14 +79,12 @@ ChatSidebarProps) => {
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar px-3">
-          <div className="text-xs font-medium text-chatgpt-gray-500 mb-2 px-2">
-            Chats
-          </div>
+          <div className="text-xs font-medium text-chatgpt-gray-500 mb-2 px-2">Chats</div>
           <div className="space-y-1 mb-6">
             {chats.map((chat) => (
               <div
                 key={chat.id}
-                className={`group flex items-center w-full p-2 rounded-lg cursor-pointer transition-colors hover:bg-chatgpt-gray-100`}
+                className="group flex items-center w-full p-2 rounded-lg cursor-pointer transition-colors hover:bg-chatgpt-gray-100"
                 onClick={() => onChatSelect(chat.id)}
               >
                 <div className="flex-1 min-w-0">
@@ -90,9 +92,11 @@ ChatSidebarProps) => {
                     {chat.title || "Untitled Chat"}
                   </div>
                   <div className="text-xs text-chatgpt-gray-500">
-                    {formatDistanceToNow(new Date(chat.updatedAt), {
-                      addSuffix: true,
-                    })}
+                    {chat.updatedAt
+                      ? formatDistanceToNow(new Date(chat.updatedAt), {
+                          addSuffix: true,
+                        })
+                      : "Just now"}
                   </div>
                 </div>
 
@@ -127,7 +131,21 @@ ChatSidebarProps) => {
                       <Archive className="w-4 h-4" />
                       Archive
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 text-sm rounded-md text-destructive hover:bg-red-100 dark:hover:bg-red-900">
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 px-2 py-2 text-sm rounded-md text-destructive hover:bg-red-100 dark:hover:bg-red-900"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const ok = confirm("Really delete this chat?");
+                        if (!ok) return;
+
+                        try {
+                          await deleteChat(chat.id);
+                          router.push("/");
+                        } catch (err) {
+                          alert("Failed to delete chat. Please try again.");
+                        }
+                      }}
+                    >
                       <Trash className="w-4 h-4" />
                       Delete
                     </DropdownMenuItem>
@@ -160,6 +178,10 @@ ChatSidebarProps) => {
         isOpen={selectedChatForOptions !== null}
         onClose={() => setSelectedChatForOptions(null)}
         chatId={selectedChatForOptions}
+      />
+      <SearchChatModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
       />
     </>
   );

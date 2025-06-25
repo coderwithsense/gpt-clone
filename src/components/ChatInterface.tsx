@@ -4,6 +4,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowUp, Paperclip, Mic } from "lucide-react";
 import { useChatStore } from "@/lib/stores/chatStore";
 
+type Chat = { id: string; title?: string };
+
 interface Message {
   id: string;
   role: "user" | "assistant";
@@ -13,7 +15,7 @@ interface Message {
 
 interface ChatInterfaceProps {
   messages: Message[];
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, chatId?: string) => void;
   isLoading: boolean;
 }
 
@@ -23,16 +25,27 @@ export const ChatInterface = ({
   isLoading,
 }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
-  const createOrUpdateChat = useChatStore((state) => state.createOrUpdateChat);
+  const [chatId, setChatId] = useState<string | null>(null);
+  type Chat = { id: string; title?: string };
+  const createOrUpdateChat = useChatStore(
+    (state) => state.createOrUpdateChat
+  ) as (chat: Partial<Chat>) => Promise<Chat>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    // Create a new chat when a new message is typed
-    await createOrUpdateChat({ title: trimmed });
-    onSendMessage(trimmed);
+    let currentChatId = chatId;
+
+    if (!currentChatId) {
+      // create a new chat only if one doesn't exist already
+      const newChat = await createOrUpdateChat({ title: trimmed });
+      currentChatId = newChat?.id;
+      setChatId(currentChatId || null);
+    }
+
+    onSendMessage(trimmed, currentChatId ?? undefined);
     setInput("");
   };
 
@@ -57,7 +70,9 @@ export const ChatInterface = ({
             {isLoading && (
               <div className="flex justify-start">
                 <div className="max-w-[70%] rounded-2xl px-4 py-3 bg-chatgpt-gray-100 text-chatgpt-gray-900">
-                  <p className="text-sm leading-relaxed animate-pulse">Thinking...</p>
+                  <p className="text-sm leading-relaxed animate-pulse">
+                    Thinking...
+                  </p>
                 </div>
               </div>
             )}
@@ -70,7 +85,12 @@ export const ChatInterface = ({
         <div className="max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="relative w-full">
             <div className="flex items-center border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-full px-4 py-[6px] shadow-sm focus-within:ring-2 focus-within:ring-ring transition-colors">
-              <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted rounded-full w-8 h-8 p-0">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:bg-muted rounded-full w-8 h-8 p-0"
+              >
                 <Paperclip className="w-4 h-4" />
               </Button>
 
@@ -84,7 +104,12 @@ export const ChatInterface = ({
               />
 
               <div className="flex items-center gap-1">
-                <Button type="button" variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted rounded-full w-8 h-8 p-0">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:bg-muted rounded-full w-8 h-8 p-0"
+                >
                   <Mic className="w-4 h-4" />
                 </Button>
 
@@ -103,9 +128,15 @@ export const ChatInterface = ({
           <div className="text-center mt-3">
             <p className="text-xs text-muted-foreground">
               By messaging ChatGPT, you agree to our{" "}
-              <button className="underline hover:no-underline">Terms</button> and have read our{" "}
-              <button className="underline hover:no-underline">Privacy Policy</button>.{" "}
-              <button className="underline hover:no-underline">Cookie Preferences</button>
+              <button className="underline hover:no-underline">Terms</button>{" "}
+              and have read our{" "}
+              <button className="underline hover:no-underline">
+                Privacy Policy
+              </button>
+              .{" "}
+              <button className="underline hover:no-underline">
+                Cookie Preferences
+              </button>
             </p>
           </div>
         </div>
@@ -115,7 +146,11 @@ export const ChatInterface = ({
 };
 
 const MessageBubble = ({ message }: { message: Message }) => (
-  <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+  <div
+    className={`flex ${
+      message.role === "user" ? "justify-end" : "justify-start"
+    }`}
+  >
     <div
       className={`max-w-[70%] rounded-2xl px-4 py-3 ${
         message.role === "user"
@@ -131,16 +166,27 @@ const MessageBubble = ({ message }: { message: Message }) => (
 const EmptyState = () => (
   <div className="flex flex-col items-center justify-center h-full px-4">
     <div className="text-center max-w-2xl w-full">
-      <h2 className="text-2xl font-normal text-chatgpt-gray-900 mb-12">What are you working on?</h2>
+      <h2 className="text-2xl font-normal text-chatgpt-gray-900 mb-12">
+        What are you working on?
+      </h2>
       <div className="grid grid-cols-2 gap-3 mb-8 max-w-lg mx-auto">
-        {["📝 Summarize text", "💡 Brainstorm", "📝 Make a plan", "📊 Analyze data", "💻 Code", "More"].map((item, idx) => (
+        {[
+          "📝 Summarize text",
+          "💡 Brainstorm",
+          "📝 Make a plan",
+          "📊 Analyze data",
+          "💻 Code",
+          "More",
+        ].map((item, idx) => (
           <Button
             key={idx}
             variant="outline"
             className="h-12 text-left text-chatgpt-gray-700 border-chatgpt-gray-200 hover:bg-chatgpt-gray-50 transition-colors rounded-xl bg-chatgpt-white flex items-center justify-start px-4"
           >
             <span className="mr-3">{item.split(" ")[0]}</span>
-            <span className="text-sm">{item.split(" ").slice(1).join(" ")}</span>
+            <span className="text-sm">
+              {item.split(" ").slice(1).join(" ")}
+            </span>
           </Button>
         ))}
       </div>

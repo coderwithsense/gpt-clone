@@ -43,14 +43,13 @@ export const getChatById = async (chatId: string) => {
   }
 };
 
-export const createChat = async (chatId: string, prompt: string, userId: string) => {
+export const createChat = async (prompt: string, userId: string) => {
   try {
     const newTitle = await createTitle(prompt);
     return await prisma.chat.create({
       data: {
-        id: chatId,
         title: newTitle,
-        userId
+        userId: userId,
       }
     });
   } catch (error) {
