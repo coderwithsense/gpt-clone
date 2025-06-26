@@ -5,21 +5,22 @@ import { ArrowUp, Paperclip, Mic } from "lucide-react";
 
 interface Message {
   id: string;
-  role: "user" | "assistant";
+  chatId: string;
   content: string;
-  timestamp: Date;
+  role: "user" | "assistant";
+  createdAt: string;
 }
 
 interface ChatInterfaceProps {
   messages: Message[];
-  onSendMessage: (message: string, chatId?: string) => void;
+  // onSendMessage: (message: string, chatId?: string) => void;
   isLoading: boolean;
   currentChatId?: string; // Add this to track current chat
 }
 
 export const ChatInterface = ({
   messages,
-  onSendMessage,
+  // onSendMessage,
   isLoading,
   currentChatId, // Get current chat ID from parent
 }: ChatInterfaceProps) => {

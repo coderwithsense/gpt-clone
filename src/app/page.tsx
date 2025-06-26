@@ -6,50 +6,51 @@ import { Layout } from "@/components/Layout";
 
 interface Message {
   id: string;
-  role: "user" | "assistant";
+  chatId: string;
   content: string;
-  timestamp: Date;
+  role: "user" | "assistant";
+  createdAt: string;
 }
 
 const Home = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  const handleSendMessage = async (content: string) => {
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content,
-      timestamp: new Date(),
-    };
+  // const handleSendMessage = async (content: string) => {
+  //   const userMessage: Message = {
+  //     id: Date.now().toString(),
+  //     role: "user",
+  //     content,
+  //     createdAt: new Date(),
+  //   };
 
-    setMessages((prev) => [...prev, userMessage]);
+  //   setMessages((prev) => [...prev, userMessage]);
 
-    try {
-      const res = await fetch("/api/chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: content }),
-      });
+  //   try {
+  //     const res = await fetch("/api/chats", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ prompt: content }),
+  //     });
 
-      const data = await res.json();
+  //     const data = await res.json();
 
-      if (data.success) {
-        const aiResponse: Message = {
-          id: Date.now().toString(),
-          role: "assistant",
-          content: data.message, // real response from `askAI`
-          timestamp: new Date(),
-        };
+  //     if (data.success) {
+  //       const aiResponse: Message = {
+  //         id: Date.now().toString(),
+  //         role: "assistant",
+  //         content: data.message, // real response from `askAI`
+  //         timestamp: new Date(),
+  //       };
 
-        setMessages((prev) => [...prev, aiResponse]);
-      } else {
-        throw new Error(data.message || "Unknown error");
-      }
-    } catch (error) {
-      console.error("Send message error:", error);
-    }
-  };
+  //       setMessages((prev) => [...prev, aiResponse]);
+  //     } else {
+  //       throw new Error(data.message || "Unknown error");
+  //     }
+  //   } catch (error) {
+  //     console.error("Send message error:", error);
+  //   }
+  // };
 
   // Show auth modal on first visit
   const handleShowAuth = () => {
@@ -60,7 +61,6 @@ const Home = () => {
     <Layout showAuth={showAuthModal}>
       <ChatInterface
         messages={messages}
-        onSendMessage={handleSendMessage}
         isLoading={false}
       />
     </Layout>

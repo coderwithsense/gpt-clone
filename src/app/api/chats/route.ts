@@ -1,29 +1,24 @@
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { createChat, getChatById } from "@/lib/api";
+import { createChat, getChatById, getChats, getMessagesByChatId } from "@/lib/api";
 import { askAI } from "@/services/chat.service";
+import { request } from "http";
 
-// Get all chats for a user
-export async function GET() {
+// Get all chats for a user, if chatId is passed, it will get the chat by that 
+export async function GET(request: NextRequest) {
   const { userId } = await auth();
 
   if (!userId) {
-    return new Response(JSON.stringify({ success: false, message: "Unauthorized" }), { status: 401 });
+    return NextResponse.json({
+      success: false,
+      message: "User not authenticated",
+    }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+  
 
-  if (!user) {
-    return new Response(JSON.stringify({ success: false, message: "User not found" }), { status: 404 });
-  }
-
-  const chats = await prisma.chat.findMany({
-    where: { userId: user.id }, // Use user.id instead of userId
-    orderBy: { updatedAt: "desc" },
-  });
-
-  console.log('Fetched chats for user:', userId, 'Chats:', chats);
+  const chats = await getChats(userId);
 
   return Response.json({ success: true, chats });
 }
