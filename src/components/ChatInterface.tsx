@@ -25,6 +25,11 @@ export const ChatInterface = ({
   currentChatId, // Get current chat ID from parent
 }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
+  const onSendMessage = (message: string, chatId?: string) => {
+    // This function should be defined in the parent component
+    // and passed down as a prop to handle sending messages
+    console.warn("onSendMessage not implemented in parent component");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
