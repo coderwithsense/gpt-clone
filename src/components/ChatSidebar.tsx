@@ -19,6 +19,7 @@ import {
   Share2,
 } from "lucide-react";
 import { ChatOptionsModal } from "./ChatOptionsModal";
+import { DeleteChatModal } from "./DeleteChatModal";
 import { formatDistanceToNow } from "date-fns";
 import { useChatStore } from "@/lib/stores/chatStore";
 import { useRouter } from "next/navigation";
@@ -43,6 +44,7 @@ export const ChatSidebar = ({
   onChatSelect,
 }: ChatSidebarProps) => {
   const [selectedChatForOptions, setSelectedChatForOptions] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const { chats, fetchChats, deleteChat } = useChatStore();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const router = useRouter();
@@ -133,17 +135,9 @@ export const ChatSidebar = ({
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="flex items-center gap-2 px-2 py-2 text-sm rounded-md text-destructive hover:bg-red-100 dark:hover:bg-red-900"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        const ok = confirm("Really delete this chat?");
-                        if (!ok) return;
-
-                        try {
-                          await deleteChat(chat.id);
-                          router.push("/");
-                        } catch (err) {
-                          alert("Failed to delete chat. Please try again.");
-                        }
+                        setDeleteTarget({ id: chat.id, title: chat.title || "Untitled Chat" });
                       }}
                     >
                       <Trash className="w-4 h-4" />
@@ -179,9 +173,23 @@ export const ChatSidebar = ({
         onClose={() => setSelectedChatForOptions(null)}
         chatId={selectedChatForOptions}
       />
+
       <SearchChatModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
+      />
+
+      <DeleteChatModal
+        isOpen={deleteTarget !== null}
+        chatTitle={deleteTarget?.title ?? ""}
+        onClose={() => setDeleteTarget(null)}
+        onDelete={async () => {
+          if (deleteTarget) {
+            await deleteChat(deleteTarget.id);
+            router.push("/");
+            fetchChats();
+          }
+        }}
       />
     </>
   );
