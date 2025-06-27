@@ -95,46 +95,29 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   loadChat: async (chatId: string) => {
+    console.log("🛫 loadChat called with", chatId);
     set({ isLoading: true });
-
+  
     try {
-      // Fetch chat details and messages
-      // const [chatResponse, messagesResponse] = await Promise.all([
-      //   fetch(`/api/chats/${chatId}`),
-      //   fetch(`/api/chats/${chatId}/messages`)
-      // ]);
-
-      const messagesResponse = await fetch("/api/load-chat", {
+      const res = await fetch("/api/load-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chatId }),
       });
-
-      const messagesData = await messagesResponse.json();
-      console.log("Messages response:", messagesData);
-
-      if (messagesResponse.ok && messagesData.success) {
-        set({
-          messages: messagesData.messages,
-          isLoading: false,
-        });
+      const data = await res.json();
+      console.log("🛬 loadChat response", data);
+  
+      if (res.ok && data.success) {
+        set({ messages: data.messages, isLoading: false });
       } else {
-        set({
-          currentChat: null,
-          messages: [],
-          isLoading: false,
-        });
+        set({ messages: [], isLoading: false });
       }
-
-    } catch (error) {
-      console.error("Failed to load chat:", error);
-      set({
-        currentChat: null,
-        messages: [],
-        isLoading: false,
-      });
+    } catch (err) {
+      console.error("loadChat ‑ fetch error:", err);
+      set({ messages: [], isLoading: false });
     }
   },
+  
 
   clearCurrentChat: () => {
     set({

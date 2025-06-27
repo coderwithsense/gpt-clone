@@ -16,8 +16,6 @@ export async function GET(request: NextRequest) {
     }, { status: 401 });
   }
 
-  
-
   const chats = await getChats(userId);
 
   return Response.json({ success: true, chats });

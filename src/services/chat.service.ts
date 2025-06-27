@@ -38,14 +38,14 @@ const generateResponse = async (prompt: string, userId: string, chatId: string) 
 }
 
 const createTitle = async (prompt: string) => {
-    // const result = await generateText({
-    //     model: geminiModel("gemini-2.0-flash-lite-preview-02-05"),
-    //     prompt: `Do NOT include explanations, punctuation, or quotation marks. Just return the title, nothing else. Create a title for my chat in not more than 3-5 words, this is the first prompt for the user: "${prompt}"`,
-    //     temperature: 0.5,
-    // });
+    const result = await generateText({
+        model: geminiModel("gemini-2.0-flash-lite-preview-02-05"),
+        prompt: `Do NOT include explanations, punctuation, or quotation marks. Just return the title, nothing else. Create a title for my chat in not more than 3-5 words, this is the first prompt for the user: "${prompt}"`,
+        temperature: 0.5,
+    });
 
-    // return result.text;
-    return `Title for: ${prompt}`;
+    return result.text;
+    // return `Title for: ${prompt}`;
 };
 
 export { createTitle, askAI };

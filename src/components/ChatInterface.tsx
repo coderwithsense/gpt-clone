@@ -1,44 +1,75 @@
 import { useState } from "react";
+import { useChatStore } from "@/lib/stores/chatStore";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowUp, Paperclip, Mic } from "lucide-react";
-
-interface Message {
-  id: string;
-  chatId: string;
-  content: string;
-  role: "user" | "assistant";
-  createdAt: string;
-}
+import { useRouter } from "next/navigation";
 
 interface ChatInterfaceProps {
-  messages: Message[];
-  // onSendMessage: (message: string, chatId?: string) => void;
   isLoading: boolean;
-  currentChatId?: string; // Add this to track current chat
+  currentChatId?: string;
 }
 
 export const ChatInterface = ({
-  messages,
-  // onSendMessage,
-  isLoading,
-  currentChatId, // Get current chat ID from parent
+  isLoading: isLoadingFromProps,
+  currentChatId,
 }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
-  const onSendMessage = (message: string, chatId?: string) => {
-    // This function should be defined in the parent component
-    // and passed down as a prop to handle sending messages
-    console.warn("onSendMessage not implemented in parent component");
-  };
+
+  const router = useRouter();
+
+  const {
+    messages,
+    addMessage,
+    isLoading: isLoadingStore,
+  } = useChatStore();
+
+  const isLoading = isLoadingStore || isLoadingFromProps;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    // Simply send the message - let the backend handle chat creation
-    onSendMessage(trimmed, currentChatId);
+    const userMessage = {
+      id: Date.now().toString(),
+      chatId: currentChatId || "",
+      content: trimmed,
+      role: "user" as "user",
+      createdAt: new Date().toISOString(),
+    };
+
+    addMessage(userMessage);
     setInput("");
+
+    try {
+      const res = await fetch("/api/chats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: trimmed, chatId: currentChatId }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        const aiMessage = {
+          id: Date.now().toString(),
+          chatId: data.chatId || currentChatId,
+          content: data.message,
+          role: "assistant" as "assistant",
+          createdAt: new Date().toISOString(),
+        };
+
+        addMessage(aiMessage);
+        
+        // Only navigate if we're creating a new chat (no currentChatId) AND we got a valid chatId back
+        if (!currentChatId && data.chatId && data.chatId !== 'undefined') {
+          router.push(`/c/${data.chatId}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -90,9 +121,11 @@ export const ChatInterface = ({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask anything"
-                className="flex-1 text-sm placeholder:text-muted-foreground border-none bg-transparent resize-none overflow-hidden max-h-[80px] min-h-[32px] focus-visible:ring-0 focus-visible:ring-offset-0 px-3 py-[6px] leading-[20px]"
-                rows={1}
+                placeholder={
+                  isLoading ? "Waiting for response..." : "Ask anything"
+                }
+                disabled={isLoading}
+                className="flex-1 text-sm placeholder:text-muted-foreground border-none bg-transparent resize-none overflow-hidden max-h-[80px] min-h-[32px] focus-visible:ring-0 focus-visible:ring-offset-0 px-3 py-[6px] leading-[20px] disabled:opacity-50"
               />
 
               <div className="flex items-center gap-1">
@@ -137,7 +170,7 @@ export const ChatInterface = ({
   );
 };
 
-const MessageBubble = ({ message }: { message: Message }) => (
+const MessageBubble = ({ message }: { message: any }) => (
   <div
     className={`flex ${
       message.role === "user" ? "justify-end" : "justify-start"

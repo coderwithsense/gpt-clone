@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useUserStore } from "@/lib/stores/userUserStore";
+import { useRouter } from "next/navigation";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -25,6 +26,7 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const { userData, setUserData } = useUserStore();
+  const router = useRouter();
 
   useEffect(() => {
     if (showAuth && isLoaded && !isSignedIn) {
@@ -34,13 +36,14 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
 
   useEffect(() => {
     const syncUserToDB = async () => {
-      if (!isSignedIn || !user?.primaryEmailAddress?.emailAddress || userData) return;
+      if (!isSignedIn || !user?.primaryEmailAddress?.emailAddress || userData)
+        return;
 
       try {
-        const res = await fetch('/api/user', {
-          method: 'POST',
+        const res = await fetch("/api/user", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             email: user.primaryEmailAddress.emailAddress,
@@ -58,10 +61,13 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
             lastName: user.lastName ?? undefined,
           });
         } else {
-          console.error('User already exists or failed to create:', result.message);
+          console.error(
+            "User already exists or failed to create:",
+            result.message
+          );
         }
       } catch (err) {
-        console.error('Failed to sync user:', err);
+        console.error("Failed to sync user:", err);
         toast.error("Failed to sync user");
       }
     };
@@ -70,6 +76,7 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
   }, [user, isSignedIn, userData, setUserData]);
 
   const handleChatSelect = (chatId: string) => {
+    router.push(`/c/${chatId}`);
     setCurrentChatId(chatId);
   };
 
@@ -100,7 +107,9 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
                 <div className="w-4 h-0.5 bg-current" />
               </div>
             </Button>
-            <h1 className="text-lg font-medium text-chatgpt-gray-900">ChatGPT</h1>
+            <h1 className="text-lg font-medium text-chatgpt-gray-900">
+              ChatGPT
+            </h1>
           </div>
 
           {/* Auth Buttons */}
