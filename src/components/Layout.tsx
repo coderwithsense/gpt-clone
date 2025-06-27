@@ -17,7 +17,7 @@ interface LayoutProps {
 }
 
 export const Layout = ({ children, showAuth = false }: LayoutProps) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
