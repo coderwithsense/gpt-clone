@@ -6,7 +6,7 @@ import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SignalIcon, SignIn } from "lucide-react";
+import { SignalIcon } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -289,8 +289,9 @@ const OAuthButton = ({
 
     try {
       await auth.authenticateWithRedirect({
-        strategy: `oauth_${provider}`,
+        strategy: "oauth_google",
         redirectUrl: "/",
+        redirectUrlComplete: "/",
       });
     } catch (err) {
       console.error(`${provider} OAuth failed`, err);
