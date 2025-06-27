@@ -85,9 +85,9 @@ export const ChatInterface = ({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-chatgpt-white">
+    <div className="flex flex-col h-full bg-chatgpt-white">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto scroll-smooth min-h-0">
+      <div className="flex-1 overflow-y-auto scroll-smooth">
         {messages.length === 0 ? (
           <EmptyState />
         ) : (
