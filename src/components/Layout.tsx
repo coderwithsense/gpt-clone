@@ -161,7 +161,7 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-hidden">{children}</div>
+        <div className="flex-1 h-0 overflow-auto">{children}</div>
       </div>
 
       {/* Auth Modal */}

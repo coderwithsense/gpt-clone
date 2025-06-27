@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useChatStore } from "@/lib/stores/chatStore";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowUp, Paperclip, Mic } from "lucide-react";
 import { useRouter } from "next/navigation";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
 
 interface ChatInterfaceProps {
   isLoading: boolean;
@@ -15,16 +18,18 @@ export const ChatInterface = ({
   currentChatId,
 }: ChatInterfaceProps) => {
   const [input, setInput] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
 
-  const {
-    messages,
-    addMessage,
-    isLoading: isLoadingStore,
-  } = useChatStore();
+  const { messages, addMessage, isLoading: isLoadingStore } = useChatStore();
 
   const isLoading = isLoadingStore || isLoadingFromProps;
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,9 +66,9 @@ export const ChatInterface = ({
         };
 
         addMessage(aiMessage);
-        
+
         // Only navigate if we're creating a new chat (no currentChatId) AND we got a valid chatId back
-        if (!currentChatId && data.chatId && data.chatId !== 'undefined') {
+        if (!currentChatId && data.chatId && data.chatId !== "undefined") {
           router.push(`/c/${data.chatId}`);
         }
       }
@@ -82,11 +87,11 @@ export const ChatInterface = ({
   return (
     <div className="flex flex-col h-full bg-chatgpt-white">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 overflow-y-auto scroll-smooth">
         {messages.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="space-y-6 p-6">
+          <div className="space-y-6 p-6 pb-20">
             {messages.map((message) => (
               <MessageBubble key={message.id} message={message} />
             ))}
@@ -99,6 +104,8 @@ export const ChatInterface = ({
                 </div>
               </div>
             )}
+            {/* Invisible div to scroll to */}
+            <div ref={messagesEndRef} />
           </div>
         )}
       </div>
@@ -183,7 +190,12 @@ const MessageBubble = ({ message }: { message: any }) => (
           : "bg-chatgpt-gray-100 text-chatgpt-gray-900"
       }`}
     >
-      <p className="text-sm leading-relaxed">{message.content}</p>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeHighlight]}
+      >
+        {message.content}
+      </ReactMarkdown>
     </div>
   </div>
 );
