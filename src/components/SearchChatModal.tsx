@@ -51,7 +51,7 @@ export const SearchChatModal = ({ isOpen, onClose }: SearchChatModalProps) => {
               className="p-3 rounded hover:bg-gray-100 cursor-pointer transition"
               onClick={() => {
                 onClose();
-                router.push(`/chat/${chat.id}`);
+                router.push(`/c/${chat.id}`);
               }}
             >
               <div className="text-sm font-medium truncate">
