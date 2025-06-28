@@ -1,36 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💬 ChatGPT Clone
 
-## Getting Started
+A powerful full-stack, streaming-capable ChatGPT clone built with Next.js, Clerk, Prisma, OpenAI/Gemini models, and markdown-rich UI. Supports real-time chat, persistent history, and seamless extensibility.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🚀 Features
+
+* 🔐 Authentication via Clerk
+* 💾 Persistent chats with Prisma + PostgreSQL
+* 💬 Real-time AI streaming with `@ai-sdk`
+* 🤖 Model switching support (OpenAI, Gemini)
+* 🎨 Markdown + syntax highlighting (ReactMarkdown + Rehype)
+* 📎 File upload, 🎤 voice input hooks (UI-ready)
+* 🧪 Plug-and-play backend logic for future expansion
+
+---
+
+## 🧰 Tech Stack
+
+| Layer    | Tech                                    |
+| -------- | --------------------------------------- |
+| Frontend | Next.js (App Router), Tailwind, ShadCN  |
+| Auth     | Clerk                                   |
+| Backend  | AI SDK (`@ai-sdk/react`), Vercel Edge   |
+| DB       | Prisma + PostgreSQL                     |
+| Models   | OpenAI GPT-4o, Gemini 1.5 (via wrapper) |
+
+---
+
+## 📸 UI Overview
+
+```
+[ Chat Box ]
+┌────────────────────────────────────────────┐
+│ AI: Hello! How can I help you today?       │
+│ You: What is LangGraph?                    │
+│ AI: LangGraph is a framework built on...   │
+└────────────────────────────────────────────┘
+
+[ Input Field ]
+───────────────────────────────────────────────
+[ 📎 ] [ 🎤 ] Ask anything... [ ⬆️ ]
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## ⚙️ Setup Guide
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Clone the Repo
 
-## Learn More
+```bash
+git clone https://github.com/yourname/chatgpt-clone.git
+cd chatgpt-clone
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Install Dependencies
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+yarn install # or npm install
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. Configure Environment
 
-## Deploy on Vercel
+Create a `.env` file based on `.env.example`:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+DATABASE_URL=postgresql://user:pass@localhost:5432/yourdb
+CLERK_SECRET_KEY=your_clerk_secret
+CLERK_PUBLISHABLE_KEY=your_clerk_key
+OPENAI_API_KEY=your_openai_key
+GEMINI_API_KEY=your_gemini_key
+NEXT_PUBLIC_CLERK_FRONTEND_API=...
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 4. Generate Prisma Client
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+### 5. Run the Dev Server
+
+```bash
+yarn dev
+```
+
+Open `http://localhost:3000` 🎉
+
+---
+
+## 🧑‍💻 Contribution Guide
+
+### 💡 Ways to Contribute
+
+* Add support for Claude/Mistral models
+* Improve mobile responsiveness
+* Add message editing/deletion
+* Add image/file parsing
+* Add agent memory (LangGraph-compatible)
+
+### 🧪 Running Tests
+
+To be added (PRs welcome!)
+
+### 🧼 Linting & Formatting
+
+```bash
+yarn lint
+```
+
+### ✉️ Submit a PR
+
+1. Fork this repo
+2. Create your branch (`git checkout -b feat/your-feature`)
+3. Commit your changes
+4. Push and open a PR
+
+---
+
+## 📦 Folder Structure (important ones)
+
+```
+.
+├── app/
+│   └── c/[chatId]/page.tsx     # Chat UI
+├── lib/
+│   ├── api.ts                  # DB queries
+│   ├── prisma.ts               # Prisma client
+│   └── models.ts               # AI model config
+├── services/
+│   └── chat.service.ts         # Logic to talk to AI
+├── components/
+│   └── ChatInterface.tsx       # Full chat interface
+├── pages/
+│   └── api/chats/route.ts      # Streaming AI route
+```
+
+---
+
+## 🤝 Credits
+
+Built by [YourName](https://github.com/yourname), powered by OpenAI + Gemini.
+
+PRs, stars, forks welcome! ⭐
