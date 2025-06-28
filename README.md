@@ -30,18 +30,8 @@ A powerful full-stack, streaming-capable ChatGPT clone built with Next.js, Clerk
 
 ## 📸 UI Overview
 
-```
-[ Chat Box ]
-┌────────────────────────────────────────────┐
-│ AI: Hello! How can I help you today?       │
-│ You: What is LangGraph?                    │
-│ AI: LangGraph is a framework built on...   │
-└────────────────────────────────────────────┘
+<img width="1470" alt="image" src="https://github.com/user-attachments/assets/ab3bd467-4a27-47d5-bf98-3829d1cf02a7" />
 
-[ Input Field ]
-───────────────────────────────────────────────
-[ 📎 ] [ 🎤 ] Ask anything... [ ⬆️ ]
-```
 
 ---
 
