@@ -23,7 +23,12 @@ export const ChatInterface = ({
   const messagesEndRef = useRef<HTMLDivElement>(null!);
   const router = useRouter();
 
-  const { messages, addMessage, isLoading: isLoadingStore } = useChatStore();
+  const {
+    messages,
+    addMessage,
+    isLoading: isLoadingStore,
+    selectedModel,
+  } = useChatStore();
   const isLoading = isLoadingStore || isLoadingFromProps;
 
   useEffect(() => {
@@ -42,10 +47,15 @@ export const ChatInterface = ({
     addMessage(userMessage);
 
     try {
+      console.log(selectedModel);
       const res = await fetch("/api/chats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: trimmed, chatId: currentChatId }),
+        body: JSON.stringify({
+          prompt: trimmed,
+          chatId: currentChatId,
+          selectedModel: selectedModel,
+        }),
       });
 
       const data = await res.json();

@@ -10,12 +10,12 @@ export async function regenerateFromMessage({
     prompt: string;
 }) {
 
-    const { addMessage } = useChatStore.getState();
+    const { addMessage, selectedModel } = useChatStore.getState();
     try {
         const res = await fetch("/api/regenerate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chatId, messageId: upToId, newContent: prompt }),
+            body: JSON.stringify({ chatId, messageId: upToId, newContent: prompt, selectedModel: selectedModel }),
         });
 
         const data = await res.json();

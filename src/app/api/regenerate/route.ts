@@ -12,10 +12,10 @@ import { generateResponseWithMessages } from "@/services/chat.service";
 
 export async function POST(req: NextRequest) {
     try {
-        const { chatId, upToId, prompt } = await req.json();
-        console.log("Regenerate request:", { chatId, upToId, prompt });
+        const { chatId, upToId, prompt, selectedModel } = await req.json();
+        console.log("Regenerate request:", { chatId, upToId, prompt, selectedModel });
 
-        if (!chatId || !upToId || !prompt) {
+        if (!chatId || !upToId || !prompt || !selectedModel) {
             return NextResponse.json(
                 { success: false, message: "Missing parameters" },
                 { status: 400 }
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         cleanHistory.push({ role: "user", content: prompt.trim() });
 
         // Step 5: Gemini call
-        const aiResponse = await generateResponseWithMessages(cleanHistory);
+        const aiResponse = await generateResponseWithMessages(selectedModel, cleanHistory);
 
         // Step 6: Save assistant reply
         await createNewAssistantMessage(chatId, aiResponse);

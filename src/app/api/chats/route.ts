@@ -31,12 +31,20 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    const { chatId, prompt } = await request.json();
+    const { chatId, prompt, selectedModel } = await request.json();
+    console.log(selectedModel);
 
     if (!prompt) {
       return NextResponse.json({
         success: false,
         message: 'Prompt is required',
+      }, { status: 400 });
+    }
+
+    if (!selectedModel) {
+      return NextResponse.json({
+        success: false,
+        message: 'Model is required',
       }, { status: 400 });
     }
 
@@ -57,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Ai generation of chat
-    const message = await askAI(prompt, user.id, chat?.id as string);
+    const message = await askAI(selectedModel, prompt, user.id, chat?.id as string);
 
     return NextResponse.json({
       success: true,

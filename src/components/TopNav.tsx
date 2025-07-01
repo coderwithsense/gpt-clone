@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/lib/stores/userUserStore";
+import { ModelSelector } from "@/components/ModelSelector";
 
 interface TopNavProps {
   isSignedIn: boolean;
@@ -24,7 +25,7 @@ export const TopNav = ({
 
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-chatgpt-white border-b border-chatgpt-gray-200">
-      {/* Left side: Logo + Hamburger */}
+      {/* Left side: Logo + Hamburger + Model Selector */}
       <div className="flex items-center space-x-3">
         {/* Hamburger: mobile only */}
         <Button
@@ -40,7 +41,8 @@ export const TopNav = ({
           </div>
         </Button>
 
-        <h1 className="text-lg font-medium text-chatgpt-gray-900">ChatGPT</h1>
+        {/* Model Selector - only show when signed in */}
+        {isSignedIn && <ModelSelector />}
       </div>
 
       {/* Right side: Auth Buttons */}

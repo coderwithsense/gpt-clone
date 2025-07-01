@@ -1,32 +1,9 @@
 import { createMessage, getMessagesByChatId } from "@/lib/api";
+import { MODELS } from "@/lib/config/models";
 import { geminiModel } from "@/lib/models";
 import { generateText, streamText, type CoreMessage } from "ai";
 
-const systemPrompt = `You are ChatGPT, a helpful, polite, and precise assistant created by OpenAI.
-
-Always follow the user's instructions carefully and respond clearly.
-
-Give step-by-step explanations for reasoning-heavy or technical answers.
-
-When asked for code, provide clean, readable, and well-documented code blocks.
-
-Respond in a calm, friendly tone. Be professional, but not robotic.
-
-Unless asked to speculate or be creative, your answers should be grounded in facts or reasoning.
-
-If you don’t know something, admit it honestly instead of guessing.
-
-Do not mention Gemini, Google, Bard, or your original identity unless explicitly asked.
-
-You are always aware of current AI capabilities and best practices as of 2025.
-
-Use markdown formatting for lists, tables, and clarity when useful.
-
-Do not oversimplify technical answers unless the user requests a beginner-level explanation.
-
-Assume the user has some technical background unless stated otherwise.`
-
-const askAI = async (prompt: string, userId: string, chatId: string) => {
+const askAI = async (modelSelected: string, prompt: string, userId: string, chatId: string) => {
     try {
         await createMessage({
             chatId,
@@ -34,7 +11,7 @@ const askAI = async (prompt: string, userId: string, chatId: string) => {
             prompt,
         });
 
-        const message = await generateResponse(prompt, userId, chatId);
+        const message = await generateResponse(modelSelected, prompt, userId, chatId);
 
         await createMessage({
             chatId,
@@ -49,7 +26,7 @@ const askAI = async (prompt: string, userId: string, chatId: string) => {
     }
 };
 
-const generateStreamResponse = async (prompt: string, userId: string, chatId: string) => {
+const generateStreamResponse = async (modelSelected: string, prompt: string, userId: string, chatId: string) => {
     const previousMessages = await getMessagesByChatId(chatId);
     const messages: CoreMessage[] = previousMessages.map(({ role, content }) => ({
         role,
@@ -58,7 +35,7 @@ const generateStreamResponse = async (prompt: string, userId: string, chatId: st
 
     messages.push({ role: "user", content: prompt });
     // console.log("Messages for AI:", messages);
-
+    const systemPrompt = MODELS[modelSelected].systemPrompt;
     const response = streamText({
         model: geminiModel("gemini-2.0-flash-001"),
         system: systemPrompt,
@@ -67,16 +44,18 @@ const generateStreamResponse = async (prompt: string, userId: string, chatId: st
     return streamText;
 }
 
-export const generateResponseWithMessages = async (messages: CoreMessage[]) => {
+export const generateResponseWithMessages = async (modelSelected: string, messages: CoreMessage[]) => {
+    const systemPrompt = MODELS[modelSelected].systemPrompt;
+    const model = MODELS[modelSelected].model;
     const response = await generateText({
-        model: geminiModel("gemini-2.0-flash-001"),
+        model: model("gemini-2.0-flash-001"),
         system: systemPrompt,
         messages: messages
     })
     return response.text;
 }
 
-const generateResponse = async (prompt: string, userId: string, chatId: string) => {
+const generateResponse = async (modelSelected: string, prompt: string, userId: string, chatId: string) => {
     const previousMessages = await getMessagesByChatId(chatId);
     const messages: CoreMessage[] = previousMessages.map(({ role, content }) => ({
         role,
@@ -86,31 +65,12 @@ const generateResponse = async (prompt: string, userId: string, chatId: string) 
     messages.push({ role: "user", content: prompt });
     // console.log("Messages for AI:", messages);
 
+    const systemPrompt = MODELS[modelSelected].systemPrompt;
+    const model = MODELS[modelSelected].model;
+
     const response = await generateText({
-        model: geminiModel("gemini-2.0-flash-001"),
-        system: `You are ChatGPT, a helpful, polite, and precise assistant created by OpenAI.
-
-Always follow the user's instructions carefully and respond clearly.
-
-Give step-by-step explanations for reasoning-heavy or technical answers.
-
-When asked for code, provide clean, readable, and well-documented code blocks.
-
-Respond in a calm, friendly tone. Be professional, but not robotic.
-
-Unless asked to speculate or be creative, your answers should be grounded in facts or reasoning.
-
-If you don’t know something, admit it honestly instead of guessing.
-
-Do not mention Gemini, Google, Bard, or your original identity unless explicitly asked.
-
-You are always aware of current AI capabilities and best practices as of 2025.
-
-Use markdown formatting for lists, tables, and clarity when useful.
-
-Do not oversimplify technical answers unless the user requests a beginner-level explanation.
-
-Assume the user has some technical background unless stated otherwise.`,
+        model: model("gemini-2.0-flash-001"),
+        system: systemPrompt,
         messages
     })
     return response.text;

@@ -20,7 +20,7 @@ interface MessageProps {
 
 export const MessageBubble = ({ message }: MessageProps) => {
   const isUser = message.role === "user";
-  const { editMessage, truncateAfter, addMessage } = useChatStore();
+  const { editMessage, truncateAfter, addMessage, selectedModel } = useChatStore();
 
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(message.content);
@@ -40,7 +40,7 @@ export const MessageBubble = ({ message }: MessageProps) => {
       const res = await fetch("/api/regenerate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatId, upToId, prompt }),
+        body: JSON.stringify({ chatId, upToId, prompt, selectedModel }),
       });
 
       const data = await res.json();
