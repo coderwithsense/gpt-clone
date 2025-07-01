@@ -12,6 +12,7 @@ interface Chat {
   id: string;
   title?: string;
   updatedAt: string;
+  createdAt: string;
 }
 
 interface ChatStore {

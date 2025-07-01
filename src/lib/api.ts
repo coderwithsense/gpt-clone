@@ -18,7 +18,8 @@ export async function getChats(userId: string) {
     select: {
       id: true,
       title: true,
-      createdAt: true
+      createdAt: true,
+      updatedAt: true,
     }
   });
 }
