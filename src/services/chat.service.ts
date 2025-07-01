@@ -47,11 +47,17 @@ const generateStreamResponse = async (modelSelected: string, prompt: string, use
 export const generateResponseWithMessages = async (modelSelected: string, messages: CoreMessage[]) => {
     const systemPrompt = MODELS[modelSelected].systemPrompt;
     const model = MODELS[modelSelected].model;
+    const imageMessage: CoreMessage[] = [
+        {
+            role: 'user',
+            content: 'What is there in the image? Image URL: https://t3.ftcdn.net/jpg/03/26/50/04/360_F_326500445_ZD1zFSz2cMT1qOOjDy7C5xCD4shawQfM.jpg'
+        }
+    ];
     const response = await generateText({
-        model: model("gemini-2.0-flash-001"),
+        model: model("gemini-2.5-flash-preview-04-17"),
         system: systemPrompt,
         messages: messages
-    })
+    });
     return response.text;
 }
 

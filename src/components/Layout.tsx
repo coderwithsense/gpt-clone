@@ -29,23 +29,26 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
   const { userData, setUserData } = useUserStore();
   const router = useRouter();
 
-  // Show auth modal if required
+  // Always show auth modal when not signed in
   useEffect(() => {
-    if (showAuth && isLoaded && !isSignedIn) {
+    if (isLoaded && !isSignedIn) {
       setAuthModalOpen(true);
     }
-  }, [showAuth, isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn]);
 
   // Sync user to DB
   useEffect(() => {
     const syncUserToDB = async () => {
-      if (!isSignedIn || !user?.primaryEmailAddress?.emailAddress || userData) return;
+      if (!isSignedIn || !user?.primaryEmailAddress?.emailAddress || userData)
+        return;
 
       try {
         const res = await fetch("/api/user", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: user.primaryEmailAddress.emailAddress }),
+          body: JSON.stringify({
+            email: user.primaryEmailAddress.emailAddress,
+          }),
         });
 
         const result = await res.json();
@@ -58,7 +61,10 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
             lastName: user.lastName ?? undefined,
           });
         } else {
-          console.error("User already exists or failed to create:", result.message);
+          console.error(
+            "User already exists or failed to create:",
+            result.message
+          );
         }
       } catch (err) {
         console.error("Failed to sync user:", err);
@@ -74,18 +80,30 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
     setCurrentChatId(chatId);
   };
 
+  // 🔒 BLOCK APP UNTIL USER IS LOGGED IN
+  if (!isLoaded || !isSignedIn) {
+    return (
+      <>
+        <AuthModal
+          isOpen={true}
+          onClose={() => {}} // Disable closing
+          mode={authMode}
+          onModeChange={setAuthMode}
+        />
+        <Toaster />
+      </>
+    );
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
       <ChatSidebar
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         onChatSelect={handleChatSelect}
       />
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col">
-        {/* Top navigation */}
         <TopNav
           isSignedIn={!!isSignedIn}
           isLoaded={isLoaded}
@@ -101,11 +119,9 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
           onLogout={() => setLogoutModalOpen(true)}
         />
 
-        {/* Page content */}
         <div className="flex-1 h-0 overflow-auto">{children}</div>
       </div>
 
-      {/* Modals */}
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
