@@ -1,6 +1,7 @@
 import { createTitle } from '@/services/chat.service';
 import { addDays, addWeeks, addMonths, isBefore, isAfter, isSameDay } from "date-fns";
 import prisma from './prisma';
+import { CoreMessage, Message } from 'ai';
 
 export type MessageRole = 'system' | 'user' | 'assistant';
 
@@ -118,3 +119,68 @@ export const saveUserData = async (userId: string, email: string) => {
     };
   }
 };
+
+export async function deleteMessagesAfter(chatId: string, messageId: string) {
+  try {
+    const message = await prisma.message.findUnique({ where: { id: messageId } });
+    if (!message) throw new Error(`Message not found with ID: ${messageId}`);
+
+    await prisma.message.deleteMany({
+      where: {
+        chatId,
+        createdAt: { gt: message.createdAt }
+      }
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error(`[MESSAGE_API_DELETE_AFTER_ERROR]: ${error}`);
+    throw error;
+  }
+}
+
+export async function updateMessageContent(messageId: string, newContent: string) {
+  try {
+    return await prisma.message.update({
+      where: { id: messageId },
+      data: { content: newContent }
+    });
+  } catch (error) {
+    console.error(`[MESSAGE_API_UPDATE_ERROR]: ${error}`);
+    throw error;
+  }
+}
+
+export async function createNewAssistantMessage(chatId: string, content: string) {
+  try {
+    return await prisma.message.create({
+      data: {
+        chatId,
+        role: 'assistant',
+        content
+      }
+    });
+  } catch (error) {
+    console.error(`[MESSAGE_API_CREATE_ASSISTANT_ERROR]: ${error}`);
+    throw error;
+  }
+}
+
+// if that messageId is not found, it will return an empty array
+export async function getMessagesAfter(chatId: string, messageId: string): Promise<CoreMessage[]> {
+  try {
+    const message = await prisma.message.findUnique({ where: { id: messageId } });
+    if (!message) throw new Error(`Message not found with ID: ${messageId}`);
+
+    return await prisma.message.findMany({
+      where: {
+        chatId,
+        createdAt: { gt: message.createdAt }
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+  } catch (error) {
+    console.error(`[MESSAGE_API_GET_AFTER_ERROR]: ${error}`);
+    throw error;
+  }
+}

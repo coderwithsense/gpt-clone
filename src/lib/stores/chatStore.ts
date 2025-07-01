@@ -32,6 +32,8 @@ interface ChatStore {
   clearCurrentChat: () => void;
   addMessage: (message: Message) => void;
   setMessages: (messages: Message[]) => void;
+  editMessage: (id: string, newContent: string) => void;
+  truncateAfter: (id: string) => void;
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -98,7 +100,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   loadChat: async (chatId: string) => {
     console.log("🛫 loadChat called with", chatId);
     set({ isLoading: true });
-  
+
     try {
       const res = await fetch("/api/load-chat", {
         method: "POST",
@@ -107,7 +109,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       });
       const data = await res.json();
       console.log("🛬 loadChat response", data);
-  
+
       if (res.ok && data.success) {
         set({ messages: data.messages, isLoading: false });
       } else {
@@ -118,7 +120,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set({ messages: [], isLoading: false });
     }
   },
-  
+
 
   clearCurrentChat: () => {
     set({
@@ -137,4 +139,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setMessages: (messages: Message[]) => {
     set({ messages });
   },
+
+  editMessage: (id, newContent) =>
+    set(state => ({
+      messages: state.messages.map(m =>
+        m.id === id ? { ...m, content: newContent } : m
+      ),
+    })),
+
+  truncateAfter: id =>
+    set(state => {
+      const idx = state.messages.findIndex(m => m.id === id);
+      return idx === -1
+        ? {}
+        : { messages: state.messages.slice(0, idx + 1) };
+    }),
 }));
