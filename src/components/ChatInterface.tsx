@@ -72,7 +72,7 @@ export const ChatInterface = ({
 
   return (
     /* ⬅️ 1. h-screen instead of h-full so the flex column spans the whole viewport */
-    <div className="flex flex-col h-screen bg-chatgpt-white">
+    <div className="flex flex-col h-full bg-chatgpt-white">
       {/* ⬅️ 2. overflow‑y‑auto already present; keep scroll‑smooth for auto‑scroll */}
       <div className="flex-1 overflow-y-auto scroll-smooth">
         {messages.length === 0 ? (
