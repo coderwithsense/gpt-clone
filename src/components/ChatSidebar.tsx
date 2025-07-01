@@ -17,20 +17,14 @@ import {
   Trash,
   Pencil,
   Share2,
+  X,
 } from "lucide-react";
 import { ChatOptionsModal } from "./ChatOptionsModal";
 import { DeleteChatModal } from "./DeleteChatModal";
+import { SearchChatModal } from "./SearchChatModal";
 import { formatDistanceToNow } from "date-fns";
 import { useChatStore } from "@/lib/stores/chatStore";
 import { useRouter } from "next/navigation";
-import { SearchChatModal } from "./SearchChatModal";
-
-interface Chat {
-  id: string;
-  title?: string;
-  chatId: string;
-  updatedAt: string;
-}
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -38,26 +32,50 @@ interface ChatSidebarProps {
   onChatSelect: (chatId: string) => void;
 }
 
-export const ChatSidebar = ({
-  isOpen,
-  onToggle,
-  onChatSelect,
-}: ChatSidebarProps) => {
+export const ChatSidebar = ({ isOpen, onToggle, onChatSelect }: ChatSidebarProps) => {
   const [selectedChatForOptions, setSelectedChatForOptions] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
-  const { chats, fetchChats, deleteChat } = useChatStore();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { chats, fetchChats, deleteChat } = useChatStore();
   const router = useRouter();
 
   useEffect(() => {
     fetchChats();
   }, []);
 
-  if (!isOpen) return null;
+  // Lock body scroll when drawer is open (mobile)
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   return (
     <>
-      <div className="w-64 h-screen bg-chatgpt-gray-50 border-r border-chatgpt-gray-200 flex flex-col">
+      {/* Mobile backdrop */}
+      <div
+        className={`fixed inset-0 bg-black/40 z-30 md:hidden transition-opacity ${
+          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onToggle}
+      />
+
+      {/* Sidebar Drawer */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-72 bg-chatgpt-gray-50 border-r border-chatgpt-gray-200 flex flex-col transform transition-transform duration-300
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        md:static md:translate-x-0 md:w-64 md:z-auto`}
+      >
+        {/* Mobile close button */}
+        <div className="flex items-center justify-between md:hidden px-4 py-3 border-b border-chatgpt-gray-200">
+          <h2 className="text-sm font-medium text-chatgpt-gray-700">Menu</h2>
+          <button onClick={onToggle}>
+            <X className="w-5 h-5 text-chatgpt-gray-600" />
+          </button>
+        </div>
+
+        {/* New chat button */}
         <div className="p-3">
           <Button
             onClick={() => router.push("/")}
@@ -69,6 +87,7 @@ export const ChatSidebar = ({
           </Button>
         </div>
 
+        {/* Search button */}
         <div className="px-3 mb-2">
           <Button
             variant="ghost"
@@ -80,6 +99,7 @@ export const ChatSidebar = ({
           </Button>
         </div>
 
+        {/* Chat list */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-3">
           <div className="text-xs font-medium text-chatgpt-gray-500 mb-2 px-2">Chats</div>
           <div className="space-y-1 mb-6">
@@ -150,6 +170,7 @@ export const ChatSidebar = ({
           </div>
         </div>
 
+        {/* Bottom buttons */}
         <div className="p-3 border-t border-chatgpt-gray-200">
           <Button
             variant="ghost"
@@ -166,18 +187,16 @@ export const ChatSidebar = ({
             Settings
           </Button>
         </div>
-      </div>
+      </aside>
 
+      {/* Modals */}
       <ChatOptionsModal
         isOpen={selectedChatForOptions !== null}
         onClose={() => setSelectedChatForOptions(null)}
         chatId={selectedChatForOptions}
       />
 
-      <SearchChatModal
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-      />
+      <SearchChatModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
       <DeleteChatModal
         isOpen={deleteTarget !== null}

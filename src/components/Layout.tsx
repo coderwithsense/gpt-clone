@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { AuthModal } from "./AuthModal";
-import { LogoutModal } from "./LogoutModal";
-import { ChatSidebar } from "./ChatSidebar";
-import toast, { Toaster } from "react-hot-toast";
-
 import { useAuth, useUser } from "@clerk/nextjs";
 import { useUserStore } from "@/lib/stores/userUserStore";
 import { useRouter } from "next/navigation";
+
+import { AuthModal } from "./AuthModal";
+import { LogoutModal } from "./LogoutModal";
+import { ChatSidebar } from "./ChatSidebar";
+import { TopNav } from "./TopNav";
+
+import toast, { Toaster } from "react-hot-toast";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -28,32 +29,28 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
   const { userData, setUserData } = useUserStore();
   const router = useRouter();
 
+  // Show auth modal if required
   useEffect(() => {
     if (showAuth && isLoaded && !isSignedIn) {
       setAuthModalOpen(true);
     }
   }, [showAuth, isLoaded, isSignedIn]);
 
+  // Sync user to DB
   useEffect(() => {
     const syncUserToDB = async () => {
-      if (!isSignedIn || !user?.primaryEmailAddress?.emailAddress || userData)
-        return;
+      if (!isSignedIn || !user?.primaryEmailAddress?.emailAddress || userData) return;
 
       try {
         const res = await fetch("/api/user", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: user.primaryEmailAddress.emailAddress,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.primaryEmailAddress.emailAddress }),
         });
 
         const result = await res.json();
 
         if (res.ok && result.success) {
-          // Only set user data if they are new
           setUserData({
             id: user.id,
             email: user.primaryEmailAddress.emailAddress,
@@ -61,10 +58,7 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
             lastName: user.lastName ?? undefined,
           });
         } else {
-          console.error(
-            "User already exists or failed to create:",
-            result.message
-          );
+          console.error("User already exists or failed to create:", result.message);
         }
       } catch (err) {
         console.error("Failed to sync user:", err);
@@ -81,90 +75,37 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen flex w-full bg-chatgpt-white">
+    <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
       <ChatSidebar
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
-        // currentChatId={currentChatId}
         onChatSelect={handleChatSelect}
       />
 
-      {/* Main Content */}
+      {/* Main content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Navigation */}
-        <div className="flex items-center justify-between px-4 py-3 bg-chatgpt-white">
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-chatgpt-gray-600 hover:bg-chatgpt-gray-100 rounded-lg p-2"
-            >
-              <div className="w-5 h-5 flex flex-col justify-center space-y-1">
-                <div className="w-4 h-0.5 bg-current" />
-                <div className="w-4 h-0.5 bg-current" />
-                <div className="w-4 h-0.5 bg-current" />
-              </div>
-            </Button>
-            <h1 className="text-lg font-medium text-chatgpt-gray-900">
-              ChatGPT
-            </h1>
-          </div>
+        {/* Top navigation */}
+        <TopNav
+          isSignedIn={!!isSignedIn}
+          isLoaded={isLoaded}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onLogin={() => {
+            setAuthMode("login");
+            setAuthModalOpen(true);
+          }}
+          onSignup={() => {
+            setAuthMode("signup");
+            setAuthModalOpen(true);
+          }}
+          onLogout={() => setLogoutModalOpen(true)}
+        />
 
-          {/* Auth Buttons */}
-          <div className="flex items-center space-x-2">
-            {!isLoaded ? (
-              <span className="text-sm text-chatgpt-gray-500">Loading...</span>
-            ) : isSignedIn ? (
-              <>
-                <span className="text-sm text-chatgpt-gray-700">
-                  {/* Show email from DB (store) */}
-                  {userData?.email ?? "Loading..."}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setLogoutModalOpen(true)}
-                  className="text-chatgpt-gray-700 hover:bg-chatgpt-gray-100 rounded-full px-4 h-9 text-sm font-medium"
-                >
-                  Log out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setAuthMode("login");
-                    setAuthModalOpen(true);
-                  }}
-                  className="text-chatgpt-gray-700 hover:bg-chatgpt-gray-100 rounded-full px-4 h-9 text-sm font-medium"
-                >
-                  Log in
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setAuthMode("signup");
-                    setAuthModalOpen(true);
-                  }}
-                  className="text-chatgpt-gray-700 border-chatgpt-gray-300 hover:bg-chatgpt-gray-50 rounded-full px-4 h-9 text-sm font-medium bg-chatgpt-white"
-                >
-                  Sign up for free
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Content */}
+        {/* Page content */}
         <div className="flex-1 h-0 overflow-auto">{children}</div>
       </div>
 
-      {/* Auth Modal */}
+      {/* Modals */}
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
@@ -172,7 +113,6 @@ export const Layout = ({ children, showAuth = false }: LayoutProps) => {
         onModeChange={setAuthMode}
       />
 
-      {/* Logout Modal */}
       <LogoutModal
         isOpen={logoutModalOpen}
         onClose={() => setLogoutModalOpen(false)}
