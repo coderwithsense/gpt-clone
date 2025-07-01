@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
         const messages = await getMessagesByChatId(chatId);
 
-        console.log("Loaded messages:", messages);
+        // console.log("Loaded messages:", messages);
         return NextResponse.json({ success: true, messages });
     } catch (error) {
         console.error("Error loading chat:", error);

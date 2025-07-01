@@ -33,7 +33,7 @@ const generateStreamResponse = async (prompt: string, userId: string, chatId: st
     }));
 
     messages.push({ role: "user", content: prompt });
-    console.log("Messages for AI:", messages);
+    // console.log("Messages for AI:", messages);
 
     const response = streamText({
         model: geminiModel("gemini-2.0-flash-001"),
@@ -73,7 +73,7 @@ const generateResponse = async (prompt: string, userId: string, chatId: string) 
     }));
 
     messages.push({ role: "user", content: prompt });
-    console.log("Messages for AI:", messages);
+    // console.log("Messages for AI:", messages);
 
     const response = await generateText({
         model: geminiModel("gemini-2.0-flash-001"),
