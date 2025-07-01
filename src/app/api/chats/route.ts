@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
       console.log('New chat created:', chat);
     }
 
-    const message = await askAI(prompt, user.id, chat?.id as string) // Pass user.id here too
+    // Ai generation of chat
+    const message = await askAI(prompt, user.id, chat?.id as string);
 
     return NextResponse.json({
       success: true,
